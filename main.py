@@ -1,43 +1,48 @@
 import tkinter as tk
-from PIL import Image, ImageTk
-
+from paths import TurtlePathModule
 
 class TurtleGUI:
     def __init__(self, root):
         self.root = root
         root.title("Turtle Robot")
 
-        self.position = [150,150]
-
-        self.facing = "North"
-        self.draw = True
-
         self.colours = ["white", "black", "red", "green", "blue", "cyan", "yellow", "magenta"]
-
         self.colour = "black"
 
         self.canvas = tk.Canvas(root, bg="white", height=300, width=300)
         self.canvas.grid(column=0, row=0, columnspan=4)
-        self.frame = tk.Frame(root)
-        self.frame.grid(column=4, row=0)
+        self.colour_frame = tk.Frame(root)
+        self.colour_frame.grid(column=4, row=0)
 
-        self.make_turtle()
+        self.reset()
+
         self.add_colour_buttons()
-
         tk.Button(root, text="↑", command=self.move_up).grid(column=0, row=1)
         tk.Button(root, text="↓", command=self.move_down).grid(column=1, row=1)
         tk.Button(root, text="←", command=self.move_left).grid(column=2, row=1)
         tk.Button(root, text="→", command=self.move_right).grid(column=3, row=1)
-        tk.Button(root, text="↰", command=self.turn_left).grid(column=1, row=2)
-        tk.Button(root, text="↱", command=self.turn_right).grid(column=2, row=2)
-        tk.Button(root, text="Forward", command=self.move_forward).grid(column=3, row=2)
+        tk.Button(root, text="Forward", command=self.move_forward).grid(column=4, row=1)
         tk.Button(root, text="Toggle Draw", command =self.toggle_draw).grid(column=0, row=2)
+        tk.Button(root, text="Reset", command=self.reset).grid(column=1, row=2)
+        tk.Button(root, text="↰", command=self.turn_left).grid(column=2, row=2)
+        tk.Button(root, text="↱", command=self.turn_right).grid(column=3, row=2)
+        tk.Button(root, text="Backward", command=self.move_backwards).grid(column=4, row=2)
+        
 
     def make_turtle(self):
         # Turtle Body
         self.canvas.create_rectangle(self.position[0]-4, self.position[1]-4, self.position[0] + 4, self.position[1] + 4, fill='#51f07c', tag=("turtle",))
         # Turtle Head
         self.canvas.create_rectangle(self.position[0]-2, self.position[1]-4, self.position[0] + 2, self.position[1] - 7, fill='#51f07c', tag=("turtle", "head"))
+
+
+    def reset(self):
+        self.canvas.delete("all")
+        self.position = [150, 150]
+        self.facing = "North"
+        self.draw = True
+        self.colour = "black"
+        self.make_turtle()
 
     def toggle_draw(self):
         self.draw = not self.draw
@@ -47,11 +52,10 @@ class TurtleGUI:
             # We have to bind the colour to x in the lambda, otherwise the "colour" variable in the lambda
             # refers to the last element in the array at runtime and all of the buttons make the
             # colour the same.
-            tk.Button(self.frame, text=colour, command = lambda x = colour: self.change_colour(x)).grid(column=0, row=i)
+            tk.Button(self.colour_frame, text=colour, command = lambda x = colour: self.change_colour(x)).grid(column=0, row=i)
 
     def change_colour(self, colour):
-        print(colour)
-        self.colour = colour
+        self.colour = colour.lower()
     
     def move_up(self):
         if self.draw == True:
@@ -81,7 +85,7 @@ class TurtleGUI:
         self.position[0] += 10
 
     def move_forward(self):
-        # Python doesn't have match statements yet :(
+        # Python 3.8 doesn't have match statements yet 
         # In Rust I would use a Direction Enum to pattern match against
         if self.facing == "North":
             self.move_up()
@@ -91,6 +95,16 @@ class TurtleGUI:
             self.move_left()
         elif self.facing == "South":
             self.move_down()
+
+    def move_backwards(self):
+        if self.facing == "North":
+            self.move_down()
+        elif self.facing == "East":
+            self.move_left()
+        elif self.facing == "West":
+            self.move_right()
+        elif self.facing == "South":
+            self.move_up()
 
     def turn_left(self):
         # Much easier to just delete the turtles head and redraw it to show rotation
@@ -129,5 +143,6 @@ class TurtleGUI:
 window = tk.Tk()
 
 turtle_gui = TurtleGUI(window)
+TurtlePathModule(turtle_gui)
 
 window.mainloop()
